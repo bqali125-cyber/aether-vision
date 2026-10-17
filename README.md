@@ -4,195 +4,237 @@
 [![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-orange.svg)](https://pytorch.org/)
-[![Tests Passing](https://img.shields.io/badge/tests-24%20passed-brightgreen.svg)]()
+![Tests Passing](https://img.shields.io/badge/tests-24%20passed-brightgreen.svg)
 
-> **مأموریت مهندسی:** طراحی و پیاده‌سازی یک پلتفرم واقعی، ماژولار و قابل توسعه برای تحلیل هوشمند، بازسازی تصویر و Super-Resolution با تکیه بر شواهد تجربی و کنترل دقیق منابع سخت‌افزاری.
-
----
-
-## 📋 فهرست مطالب (Table of Contents)
-1. [معرفی معماری و لایه‌ها](#معماری-پروژه)
-2. [امکانات پیاده‌سازی‌شده](#امکانات-واقعاً-پیادهسازیشده)
-3. [دو حالت اصلی بازسازی (Faithful vs. Creative)](#دو-حالت-اصلی-بازسازی)
-4. [الزامات سخت‌افزاری و شتاب‌دهنده‌ها](#الزامات-سختافزاری)
-5. [راهنمای راه‌اندازی و نصب](#راهنمای-راهاندازی-و-نصب)
-6. [دستورات اجرا (Web UI, CLI, Batch, Benchmark)](#دستورات-اجرا)
-7. [مدیریت وزن‌ها و بررسی مجوزها](#مدیریت-مدلها-و-مجوزهای-حقوقی)
-8. [خطایابی و رفع مشکلات رایج حافظه](#خطایابی-و-رفع-مشکلات-رایج)
+> **Engineering Mission:** Design and implement a practical, modular, and extensible platform for intelligent image analysis, restoration, and super-resolution, guided by empirical evidence and precise hardware resource management.
 
 ---
 
-## 🏛️ معماری پروژه (Architecture)
+## 📋 Table of Contents
 
-پروژه به لایه‌های کاملاً مستقل با قراردادهای نرم‌افزاری پایدار (`Abstract Base Classes`) تقسیم شده است:
+1. [Project Architecture](#-project-architecture)
+2. [Implemented Features](#-implemented-features)
+3. [Two Main Restoration Modes: Faithful vs. Creative](#-two-main-restoration-modes)
+4. [Hardware Requirements and Accelerators](#-hardware-requirements)
+5. [Installation and Setup](#-installation-and-setup)
+6. [Usage: Web UI, CLI, Batch, and Benchmarking](#-usage)
+7. [Model Management and Licensing](#-model-management-and-licensing)
+8. [Troubleshooting and Memory Issues](#-troubleshooting-and-memory-issues)
+
+---
+
+## 🏛️ Project Architecture
+
+The project is organized into independent layers with stable software contracts based on **Abstract Base Classes (ABCs)**.
 
 ```text
 aether-vision/
-├── app/                      # لایه برنامه و رابط کاربری
-│   ├── main.py               # نقطه ورود اصلی وب‌اپلیکیشن
-│   ├── config.py             # مدیریت تنظیمات مرکزی
-│   └── ui/                   # رابط حرفه‌ای Gradio 6
-├── aether/                   # هسته پردازشی و الگوریتم‌ها
-│   ├── io/                   # ImageIO، اعتبارسنجی امنیتی، EXIF و مدیریت کانال آلفا
-│   ├── analysis/             # تحلیلگر غیرمخرب کیفیت و تخمین خرابی‌ها (Blur, Noise, Blockiness)
-│   ├── routing/              # روتر هوشمند برای انتخاب بهینه مدل‌ها بر اساس تشخیص
-│   ├── engine/               # موتور هماهنگ‌کننده و پردازش قطعه‌ای (Seam-free Tile Processor)
-│   ├── models/               # قراردادهای آداپتور و رجیستری مرکزی مدل‌ها
-│   │   └── adapters/         # آداپتورهای Real-ESRGAN، NAFNet، Restormer، GFPGAN و Classical
-│   ├── quality/              # کیفیت‌سنجی تجربی (PSNR, SSIM, MAE, Color Drift, Halo Check)
-│   ├── performance/          # PerformanceManager (تشخیص خودکار CUDA/MPS/CPU و حافظه)
-│   ├── benchmarks/           # سوئیت بنچمارک استاندارد با گزارش‌های Markdown و JSON
-│   ├── training/             # پایپلاین تخریب کنترل‌شده و چارچوب آموزش/Fine-Tuning
-│   └── utilities/            # لاگینگ ساختاریافته
-├── configs/                  # فایل‌های پیکربندی سیستم
-├── scripts/                  # اسکریپت‌های CLI، دانلود ایمن وزن‌ها و بنچمارک
-├── tests/                    # ۲۴ تست واحد و یکپارچه واقعی
-├── MODEL_LICENSES.md         # مستندات حسابرسی حقوقی و محدودیت‌های مدل‌ها
-└── SECURITY.md               # خط‌مشی حریم خصوصی و امنیت محلی
+├── app/                      # Application and user interface layer
+│   ├── main.py               # Main web application entry point
+│   ├── config.py             # Centralized configuration management
+│   └── ui/                   # Gradio 6 user interface
+├── aether/                   # Processing core and algorithms
+│   ├── io/                   # ImageIO, security validation, EXIF, and alpha-channel handling
+│   ├── analysis/             # Non-destructive image quality analysis and degradation estimation
+│   ├── routing/              # Intelligent router for model selection
+│   ├── engine/               # Orchestration engine and seam-free tiled processing
+│   ├── models/               # Model adapter contracts and central registry
+│   │   └── adapters/         # Real-ESRGAN, NAFNet, Restormer, GFPGAN, and classical adapters
+│   ├── quality/              # Empirical quality evaluation: PSNR, SSIM, MAE, color drift, and halo checks
+│   ├── performance/          # PerformanceManager for CUDA/MPS/CPU and memory detection
+│   ├── benchmarks/           # Standardized benchmark suite with Markdown and JSON reports
+│   ├── training/             # Controlled degradation pipeline and training/fine-tuning framework
+│   └── utilities/            # Structured logging
+├── configs/                  # System configuration files
+├── scripts/                  # CLI utilities, secure weight downloads, and benchmarking
+├── tests/                    # 24 unit and integration tests
+├── MODEL_LICENSES.md         # Model licensing audit and usage restrictions
+└── SECURITY.md               # Local security and privacy policy
 ```
 
 ---
 
-## ⚡ امکانات واقعاً پیاده‌سازی‌شده
+## ⚡ Implemented Features
 
-1. **تحلیل هوشمند تصویر (`ImageQualityAnalyzer`)**:
-   - محاسبه ریاضی شدت تاری با واریانس لاپلاسین و انرژی گرادیان Tenengrad.
-   - تخمین نویز سنسور بر پایه Median Absolute Deviation (MAD) در نواحی هموار.
-   - محاسبه خطای قطعه‌بندی و بلوک‌های JPEG (Wang-Bovik Blockiness Index).
-   - ارزیابی روشنایی در فضای رنگی Lab و تشخیص تصاویر کم‌نور.
-   - تشخیص حضور چهره با OpenCV Haar Cascades برای انتخاب ابزار بازسازی چهره.
+### 1. Intelligent Image Analysis (`ImageQualityAnalyzer`)
 
-2. **روتر هوشمند بازسازی (`RestorationRouter`)**:
-   - جلوگیری از عبور کورکورانه تصویر از تمام مدل‌ها.
-   - اولویت‌بندی عملیات: ابتدا حذف نویز و آرتیفکت فشرده‌سازی، سپس بازسازی وضوح و Super-Resolution برای جلوگیری از بزرگ‌نمایی نویز.
-   - ارائه گزارش شفاف برای دلایل انتخاب هر مسیر با امکان Override دستی توسط کاربر.
+- Quantitative blur estimation using Laplacian variance and Tenengrad gradient energy.
+- Sensor noise estimation using Median Absolute Deviation (MAD) in smooth image regions.
+- JPEG block artifact estimation using the Wang–Bovik Blockiness Index.
+- Brightness evaluation in the Lab color space and detection of underexposed images.
+- Face presence detection using OpenCV Haar cascades to help select face-restoration tools.
 
-3. **پردازش قطعه‌ای بدون درز (`TileProcessor`)**:
-   - تقسیم تصاویر بسیار بزرگ به کاشی‌های با هم‌پوشانی (Overlap).
-   - ترکیب با پنجره هموار ۲ بعدی کسینوسی/هَن (Hann 2D Window Blending) بدون خطوط مرزی.
-   - **بازیابی خودکار از خطای OOM**: در صورت کمبود VRAM، اندازه تایل به صورت خودکار کاهش یافته و دوباره تلاش می‌شود.
+### 2. Intelligent Restoration Router (`RestorationRouter`)
 
-4. **مدیریت پیشرفته فرمت‌ها و پیش‌پردازش (`ImageIO`)**:
-   - مدیریت خودکار چرخش EXIF (`exif_transpose`).
-   - حفظ کامل کانال آلفا (RGBA) و تفکیک، بازسازی و ترکیب دقیق آن.
-   - پشتیبانی از تصاویر سیاه و سفید (Grayscale) و فضاهای رنگی مختلف.
-   - جلوگیری از برش ناخواسته، تغییر رنگ یا تغییر نسبت ابعاد.
+- Avoids blindly passing images through every available model.
+- Prioritizes processing operations: removes noise and compression artifacts first, followed by detail restoration and super-resolution, helping prevent noise amplification.
+- Provides transparent explanations for route selection, with support for manual user overrides.
 
-5. **کیفیت‌سنجی و بنچمارک تجربی (`QualityEvaluator` & `BenchmarkSuite`)**:
-   - محاسبه معیارهای دارای مرجع: PSNR (dB)، SSIM، MAE و انحراف رنگ $\Delta E$.
-   - ردیابی آرتیفکت‌های بدون مرجع: تشخیص Halo / Ringing و اورشارپنینگ در لبه‌ها.
-   - اندازه‌گیری صدک‌های تأخیر (Mean, Median, P95) و نرخ فریم (FPS).
+### 3. Seam-Free Tiled Processing (`TileProcessor`)
 
----
+- Divides very large images into overlapping tiles.
+- Blends tiles using a smooth 2D cosine/Hann window to minimize visible seams.
+- **Automatic recovery from out-of-memory (OOM) errors:** Reduces tile size and retries processing when GPU memory is insufficient.
 
-## 🎨 دو حالت اصلی بازسازی (Modes)
+### 4. Advanced Image Formats and Preprocessing (`ImageIO`)
 
-### Mode A — Faithful Restoration (حالت وفادار)
-- **هدف**: حفظ حداکثری هندسه واقعی، بافت طبیعی و هویت چهره.
-- **رفتار**: جلوگیری از اورشارپ کردن تهاجمی، کنترل هاله در لبه‌ها و عدم تزریق بافت‌های مصنوعی یا ساختگی.
-- **کاربرد**: اسناد تاریخی، عکس‌های یادگاری، مدارک شناسایی، طبیعت و معماری دقیق.
+- Automatically handles EXIF orientation using `exif_transpose`.
+- Preserves RGBA alpha channels by separating, processing, and recombining them.
+- Supports grayscale images and different color spaces.
+- Helps prevent unintended cropping, color changes, and aspect-ratio distortion.
 
-### Mode B — Creative Enhancement (حالت خلاقانه)
-- **هدف**: غنی‌سازی ادراکی، افزایش کنتراست و بازیابی بافت‌های ریز از دست رفته با مدلهای مولد.
-- **تعهد شفافیت**: خروجی خلاقانه هرگز به عنوان حقیقت مطلق تصویر معرفی نمی‌شود و کاربر از احتمال تولید جزئیات شبیه‌سازی‌شده مطلع می‌گردد.
+### 5. Empirical Quality Evaluation and Benchmarking (`QualityEvaluator` & `BenchmarkSuite`)
+
+- Computes reference-based quality metrics: PSNR (dB), SSIM, MAE, and color difference (ΔE).
+- Tracks perceptual artifacts without a reference image, including halos, ringing, and edge oversharpening.
+- Measures latency percentiles (mean, median, and P95) and frame rate (FPS).
 
 ---
 
-## 🖥️ الزامات سخت‌افزاری (Hardware)
+## 🎨 Two Main Restoration Modes
 
-- **حداقل سیستم (CPU)**: پردازنده چند هسته‌ای Intel/AMD، حداقل 8GB رم (Inference به صورت FP32).
-- **کارت گرافیک پیشنهادی (NVIDIA CUDA)**:
-  - کارت‌های با حداقل 4GB VRAM (نظیر GeForce RTX 3050 Laptop).
-  - سیستم به صورت خودکار اندازه Tile را بر اساس VRAM تنظیم می‌کند (384px تا 512px برای جلوگیری از OOM).
-- **اپل سیلیکون (Apple Silicon MPS)**: پشتیبانی خودکار از دستگاه‌های M1/M2/M3 با شتاب سخت‌افزاری Metal.
+### Mode A — Faithful Restoration
+
+- **Goal:** Preserve image geometry, natural textures, and facial identity as faithfully as possible.
+- **Behavior:** Avoids aggressive oversharpening, controls edge halos, and avoids deliberately introducing artificial or fabricated textures.
+- **Use cases:** Historical documents, personal photographs, identification documents, nature photography, and architectural imagery where geometric accuracy matters.
+
+### Mode B — Creative Enhancement
+
+- **Goal:** Improve perceived image quality, increase contrast, and recover or synthesize fine-looking details using generative models.
+- **Transparency commitment:** Creative outputs are never presented as absolute truth. Users are informed that some details may be simulated or generated rather than faithfully recovered from the original image.
 
 ---
 
-## 🚀 راهنمای راه‌اندازی و نصب
+## 🖥️ Hardware Requirements
 
-### پیش‌نیازها
-پروژه از ابزار سریع `uv` برای ساخت محیط ایزوله استفاده می‌کند:
+- **Minimum CPU configuration:** A multi-core Intel or AMD processor with at least 8 GB of RAM for FP32 inference.
+- **Recommended NVIDIA CUDA GPU:**
+  - GPUs with at least 4 GB of VRAM, such as the GeForce RTX 3050 Laptop GPU.
+  - The system automatically adjusts tile size according to available VRAM, typically using tiles between 384 and 512 pixels to help prevent out-of-memory errors.
+- **Apple Silicon (MPS):** Automatic hardware acceleration support for M1, M2, and M3 devices through Apple's Metal backend.
+
+Actual hardware requirements depend on the selected model, input image dimensions, upscaling factor, precision, and tile settings.
+
+---
+
+## 🚀 Installation and Setup
+
+### Prerequisites
+
+The project uses `uv` for fast Python package management and isolated environments.
+
+The following PowerShell commands configure Python's encoding and activate an existing project virtual environment:
 
 ```powershell
-# در ویندوز (PowerShell)
+# On Windows (PowerShell)
 $env:PYTHONUTF8="1"
 $env:PYTHONIOENCODING="utf-8"
 
-# فعال‌سازی محیط مجازی پروژه
+# Activate the project's virtual environment
 .\.venv\Scripts\Activate.ps1
 ```
 
-در صورت نیاز به نصب مجدد در یک محیط تمیز:
+If you need to reinstall the core packages in an environment where `uv` is already installed:
+
 ```bash
-# نصب بسته‌های اصلی
 uv pip install numpy pillow opencv-python-headless scipy gradio pydantic pyyaml tqdm rich pytest torch torchvision
 ```
 
+Make sure the installed package versions are compatible with your Python version, operating system, and selected hardware accelerator.
+
 ---
 
-## 💻 دستورات اجرا (Usage)
+## 💻 Usage
 
-### ۱. اجرای رابط کاربری تحت وب (Gradio Web UI)
+### 1. Launch the Web Interface (Gradio UI)
+
 ```powershell
 python app/main.py
 ```
-سپس مرورگر خود را در آدرس `http://127.0.0.1:7860` باز کنید.
 
-### ۲. پردازش مستقیم یک تصویر از طریق CLI
+Then open the following address in your browser:
+
+`http://127.0.0.1:7860`
+
+### 2. Restore a Single Image Using the CLI
+
+Faithful restoration with 2× upscaling:
+
 ```powershell
-# بازسازی وفادار با ۲ برابر افزایش رزولوشن
 python scripts/run_cli.py examples/sample_photo.png --mode faithful --scale 2 --output outputs/
+```
 
-# بازسازی با ۴ برابر افزایش رزولوشن
+Creative enhancement with 4× upscaling:
+
+```powershell
 python scripts/run_cli.py examples/sample_photo.png --mode creative --scale 4 --output outputs/
 ```
 
-### ۳. پردازش گروهی (Batch Processing)
+### 3. Batch Processing
+
+Process a directory of images:
+
 ```powershell
 python scripts/run_cli.py D:\photos_folder --mode auto --scale 2 --output outputs/batch/
 ```
 
-### ۴. اجرای بنچمارک عملکرد و سرعت
+### 4. Run a Performance Benchmark
+
 ```powershell
 python scripts/run_benchmark.py --models classical_faithful --iterations 3 --output-dir outputs/benchmarks/
 ```
 
-### ۵. اجرای آزمون‌های خودکار (Unit & Integration Tests)
+### 5. Run Automated Tests
+
+Run the unit and integration test suite:
+
 ```powershell
 pytest -v
 ```
 
 ---
 
-## ⚖️ مدیریت مدل‌ها و مجوزهای حقوقی
+## ⚖️ Model Management and Licensing
 
-جزئیات کامل در [MODEL_LICENSES.md](MODEL_LICENSES.md) مستند شده است:
+Detailed licensing information is available in [`MODEL_LICENSES.md`](MODEL_LICENSES.md).
 
-- **Classical Engine (`classical_faithful`)**: کاملاً رایگان و آزاد برای استفاده تجاری (Apache-2.0 / BSD). بدون نیاز به دانلود وزن.
-- **Real-ESRGAN (`real_esrgan_x4`, `real_esrgan_x2`)**: لایسنس BSD-3-Clause، مجاز برای کاربردهای عمومی و تجاری.
-- **NAFNet (`nafnet_deblur`, `nafnet_denoise`)**: لایسنس MIT، با عملکرد عالی در رفع تاری حرکتی و نویز.
-- **GFPGAN (`gfpgan`)**: بازسازی تخصصی چهره. لایسنس تحقیقاتی غیرتجاری.
-- **HYPIR (`hypir`)**: **توجه مهم حقوقی:** مدل HYPIR تحت مجوز غیرتجاری CC-BY-NC-SA قرار دارد. به صورت پیش‌فرض در مسیرهای تجاری فعال نمی‌شود و اجرای آن مستلزم تأیید صریح کاربر برای مقاصد تحقیقاتی است.
+- **Classical Engine (`classical_faithful`):** Uses classical image-processing methods and does not require downloaded model weights. The applicable code and dependency licenses are documented as Apache-2.0 and/or BSD.
+- **Real-ESRGAN (`real_esrgan_x4`, `real_esrgan_x2`):** The project identifies BSD-3-Clause licensing for the upstream code. Review the terms applicable to each specific checkpoint and dependency before commercial use or redistribution.
+- **NAFNet (`nafnet_deblur`, `nafnet_denoise`):** The upstream code is identified as MIT-licensed. Check the specific pretrained weights and dependencies separately.
+- **GFPGAN (`gfpgan`):** Used for specialized face restoration. Review the upstream license and the separate terms applicable to third-party components and artifacts.
+- **HYPIR (`hypir`):** **Important licensing restriction:** The project has non-commercial-use restrictions. It is excluded from commercial workflows by default, and its use requires explicit user confirmation for research purposes. Review the upstream licensing terms before use or redistribution.
 
-### دریافت ایمن وزن‌ها:
+### Secure Weight Downloads
+
+Download supported model weights with integrity checks:
+
 ```powershell
-# دانلود وزن‌های مجاز با بررسی یکپارچگی
 python scripts/download_weights.py --model real_esrgan_x4
 python scripts/download_weights.py --model nafnet_deblur
 ```
 
+Model availability depends on the project's supported model registry and the weight-download configuration.
+
 ---
 
-## 🛠️ خطایابی و رفع مشکلات رایج
+## 🛠️ Troubleshooting and Memory Issues
 
-1. **خطای حافظه (CUDA Out of Memory)**:
-   - در رابط کاربری یا خط فرمان، اندازه Tile را کاهش دهید (مثلاً `--tile-size 256`).
-   - سیستم به صورت پیش‌فرض دارای لایه Retry خودکار است که در صورت مشاهده فشار VRAM، اندازه تایل را کوچک می‌کند.
-2. **عدم شناسایی GPU در PyTorch**:
-   - برای دریافت بیلد با شتاب‌دهنده CUDA روی کارت RTX 3050:
-     ```powershell
-     uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
-     ```
-   - سیستم در صورت عدم دسترسی به CUDA، به صورت بی‌نقص و ایمن روی CPU fallback می‌کند.
-3. **محدودیت‌های رفع تاری (Deblurring)**:
-   - تصاویری که اطلاعات فرکانس بالای آن‌ها به کلی از بین رفته است، در حالت Faithful تا مرز حفظ هندسه واقعی بازیابی می‌شوند. برای جزئیات فرضی می‌توانید از حالت Creative استفاده کنید.
+### 1. CUDA Out-of-Memory Errors
+
+- Reduce the tile size in the user interface or CLI, for example by using `--tile-size 256`.
+- The system is designed to retry processing with a smaller tile size when GPU memory pressure causes an out-of-memory error.
+
+### 2. PyTorch Does Not Detect the GPU
+
+To install a CUDA-enabled PyTorch build for a compatible NVIDIA GPU, use the appropriate PyTorch installation command for your system. For example, the following command installs a CUDA 12.4 build where supported:
+
+```powershell
+uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+```
+
+- If CUDA is unavailable, the system can fall back to CPU execution where supported by the implementation.
+
+### 3. Deblurring Limitations
+
+When high-frequency information has been completely lost, faithful restoration cannot guarantee recovery of the original details. The Faithful mode prioritizes preserving the image's underlying geometry and avoiding fabricated detail. For a more perceptually enhanced result, use Creative mode while keeping in mind that some details may be generated or simulated rather than recovered from the original image.
